@@ -1,0 +1,60 @@
+
+A koord program looks like this :
+
+***********************************************************
+agent <agentname> 
+
+using module <modulename> : 
+    actuators : 
+         <type> <actuatornames> 
+         <type> <actuatornames>
+  	 ...
+    sensors :
+	 <type> <sensornames>
+	 <type> <sensornames> 
+         ... 
+
+using module ... 
+...
+
+import <declfile>  (for shared declarations) 
+
+<type> <variablenames> 
+<type> <variablenames> 
+... 
+
+
+init:
+    <statements>
+
+
+<eventname> :
+    pre : <condition> 
+    eff :
+        <statements> 
+
+************************************************************
+
+where :
+
+1. declfile is the file which contains shared declarations. 
+2. the module is a predeclared module, and a user can only use the sensors and actuators declared in the module. They do not have to use all available sensors and actuators. 
+3. statements : assignments, if then else, loops, functioncalls. 
+4. variablenames, actuatornames, etc are comma separated parameters.
+
+The format of the declfile is as follows : 
+
+***********************************
+allwrite : 
+   <type> <variablenames> 
+   ...
+
+allread :
+   <type>[<owners>] <variablename> 
+   ...
+***********************************  
+where owner can be an integer corresponding to the id of the owner agent, or "*" when there is a variable corresponding to each agent. 
+
+The scanning process involves filters applied at various levels. 
+
+

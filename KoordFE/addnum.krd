@@ -1,0 +1,40 @@
+agent Addnum 
+
+using module Trivial:
+    actuators:
+        pass
+    sensors:
+        pass
+
+allwrite:
+  int sum = 0 
+  int numadded = 0   
+
+allread:
+  pass
+
+
+local: 
+  boolean added = false
+  int finalsum 
+ 
+init:
+  pass
+
+adding:
+  pre:(!added)
+  eff :
+      atomic: 
+         sum = sum + (pid * 2)  
+         numadded = numadded + 1
+         added = true 
+        
+added:
+  pre:(added && (numadded < numBots))
+  eff :
+      pass 
+
+finalsum:
+  pre:(numadded == numBots)
+  eff :
+      finalsum = sum 

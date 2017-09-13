@@ -1,0 +1,44 @@
+agent Leaderelect
+
+using module Trivial:
+    actuators:
+        pass
+    sensors:
+        pass
+
+allwrite:
+  int currCand = -1
+  int numVoted = 0
+allread:
+  pass
+
+local:
+  boolean voted = false
+  int myCand = pid 
+  int leader = -1
+
+init: 
+  pass 
+
+voting:
+  pre:(!voted) 
+  eff : 
+      atomic :
+        if (myCand > currCand) :
+           currCand = myCand 
+
+        else:
+           myCand = currCand 
+
+        voted = true 
+        numVoted = numVoted + 1 
+   
+voted:     
+   pre:(voted && (numVoted < numBots) )
+   eff:
+       myCand = currCand 
+
+chosen:
+   pre:(numVoted == numBots)
+   eff: 
+       leader = currCand
