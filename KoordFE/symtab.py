@@ -1,11 +1,12 @@
 
 
 class symEntry(list):
-    def __init__(self,dtype,varname,scope,owner = '*'):
+    def __init__(self,dtype,varname,scope,owner = '*',module = None):
         self.dtype = dtype
         self.varname = varname
         self.scope = scope
         self.owner = owner
+        self.module = module
 
     def __repr__(self):
 

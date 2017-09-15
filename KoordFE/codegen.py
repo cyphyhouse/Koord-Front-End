@@ -3,6 +3,9 @@ from ast import *
 #dictionary for modules
 flagdict = {'Motion':"import edu.illinois.mitra.cyphyhouse.motion.MotionParameters;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;", 'Trivial' : ""}
 
+#dictionary for module functions
+moduleprefix = {'Motion': 'gvh.plat.moat.'}
+
 #initialization code for modules 
 initdict = {'Motion' : "MotionParameters.Builder settings = new MotionParameters.Builder();\nsettings.COLAVOID_MODE(COLAVOID_MODE_TYPE.USE_COLBACK);\nMotionParameters param = settings.build();\ngvh.plat.moat.setParameters(param);\n", 'Trivial': ""}
 def flagCodeGen(flags): 
@@ -134,7 +137,9 @@ def putCodeGen(lv,symtab):
       return "" 
 
 def codeGen(inputAst,tabs,symtab = [],wnum = 0):
-    s= ""   
+    s= ""  
+    if inputAst is None :
+       return s 
     if inputAst.get_type() == pgmtype :
       pgm = inputAst
       s+= packageNameGen(pgm.name)
@@ -174,6 +179,22 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
       s+= mkindent("}",tabs+1)
       s+= recvfunc
       s+= mkindent("}",tabs)
+    if inputAst.get_type() == 'var':
+      e = getEntry(inputAst,symtab) 
+      if e is not None:
+        if e.module is not None: 
+           return modulePrefix+str(inputAst)
+        else:
+           return str(inputAst)
+    if inputAst.get_type() == 'num':
+      return str(inputAst)
+    if inputAst.get_type() == 'bval':
+      return str(inputAst) 
+    if inputAst.get_type() == 'var':
+      return str(inputAst) 
+
+    if inputAst.get_type() == 'arith':
+      return codeGen(inputAst.lexp,0,symtab) +" " + str(inputAst.op) + " "+ codeGen(inputAst.rexp,0,symtab)      
 
     if inputAst.get_type() == inittype:
      for stmt in inputAst.stmts:
@@ -195,11 +216,11 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
     if inputAst.get_type() == condtype :
       cond = inputAst
       if cond.rexp is not None:
-        s += "("+str(cond.lexp) + str(cond.op) + str(cond.rexp)+")"
+        s += "("+codeGen(cond.lexp,0,symtab) + str(cond.op) + codeGen(cond.rexp,0,symtab)+")"
       elif cond.op is not None:
-        s += "("+ str(cond.op)+str(cond.lexp)+")"
+        s += "("+ str(cond.op)+codeGen(cond.lexp,0,symtab)+")"
       else:
-        s+= "("+ str(cond.lexp)+")"
+        s+= "("+ codeGen(cond.lexp,0,symtab)+")"
     if inputAst.get_type() == 'pass':
       s+= ""
     if inputAst.get_type() == atomictype: 
@@ -223,7 +244,7 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
      
       for v in vs:
           s+= mkindent(getCodeGen(v,symtab),tabs) 
-      s+=  mkindent(str(inputAst)+";",tabs)
+      s+=  mkindent(codeGen(inputAst.lvar,0,symtab)+" = "+codeGen(inputAst.rexp,0,symtab)+";",tabs)
       s+= mkindent(putCodeGen(lv,symtab),tabs)
       #print(s)
     if inputAst.get_type() == 'ite':

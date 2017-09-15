@@ -10,7 +10,6 @@ wnum = 0
 symtab = []
 
 
-
 def p_program(p):
     '''program : agent modules awdecls ardecls locdecls init events
     '''

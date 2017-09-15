@@ -1,0 +1,10 @@
+agent Follow 
+
+
+using module Motion:
+  actuators:
+     pass     
+  sensors:
+     boolean done, inMotion
+  functions: 
+     goto 
