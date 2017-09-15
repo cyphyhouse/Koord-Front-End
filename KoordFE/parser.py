@@ -32,6 +32,18 @@ def p_modules(p):
  
 def p_module(p):
     '''module : USING MODULE CID COLON NL INDENT actuatordecls sensordecls DEDENT'''
+    if isAst(p[7]):
+       pass
+    else:
+       for decl in p[7]:
+          global symtab 
+          symtab.append(mkEntry(decl).set_module(p[2]))
+    if isAst(p[7]):
+       pass
+    else:
+       for decl in p[7]:
+          global symtab 
+          symtab.append(mkEntry(decl).set_module(p[2]))
     p[0] = moduleAst(p[3],p[7],p[8])
 
 

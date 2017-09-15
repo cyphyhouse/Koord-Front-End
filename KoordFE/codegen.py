@@ -138,8 +138,22 @@ def putCodeGen(lv,symtab):
 
 def codeGen(inputAst,tabs,symtab = [],wnum = 0):
     s= ""  
+    if inputAst.get_type ==  'map':
+          s = indent + str(inputAst)+";\n" 
+    if inputAst.get_type() == 'func':
+      m = str(inputast.name)+"("
+      if len(inputast.args) == 0 :
+         m+= ")"
+      else: 
+        for i in range(len(inputast.args)-1) :
+          m+= str(inputast.args[i])+", "
+        m+= str(inputast.args[-1]) +")"
+      s+= m         
     if inputAst is None :
        return s 
+    if inputAst.get_type() == 'mfast':
+        modname = moduleprefix[inputast.modfunc[:str(inputast.modfunc).find('.')]]
+        s += mkindent(str(modname)+str(inputast) +";\n",tabs)
     if inputAst.get_type() == pgmtype :
       pgm = inputAst
       s+= packageNameGen(pgm.name)

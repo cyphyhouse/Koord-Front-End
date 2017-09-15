@@ -12,7 +12,8 @@ class symEntry(list):
 
         return ("symEntry: "+str(self.scope)+" "+str(self.dtype)+" "+str(self.varname))
 
-
+    def set_module(self,module):
+        self.module = module 
 def getEntry(v,symtab):
     for entry in symtab :
            if(str(v)==str(entry.varname)):
