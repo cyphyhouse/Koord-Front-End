@@ -154,11 +154,13 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
     
       for i in range(0,wnum):
         declstr = "private boolean wait"+str(i)+" = false;"
-        s+= mkindent(declstr,tabs+1) 
+        s+= mkindent(declstr,tabs+2) 
 
       s+= mkindent(classInit(pgm.name),tabs+1).rstrip()+"{\n"
       s+= mkindent("super(gvh);",tabs+2)
       s+= mandatoryInits(pgm,tabs+2,wnum)
+      for stmt in pgm.init:
+        s+= codeGen(stmt,tabs+2,symtab)
       s+= mkindent("}\n",tabs+1)
       s+= mkindent("@Override",tabs+1)
       s+= mkindent("public List<Object> callStarL() {",tabs+1)
@@ -173,6 +175,9 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
       s+= recvfunc
       s+= mkindent("}",tabs)
 
+    if inputAst.get_type() == inittype:
+     for stmt in inputAst.stmts:
+      s+= codeGen(stmt,tabs)  
     if inputAst.get_type() == evnttype :
       event = inputAst
       vs = getVars(event.pre)
@@ -210,12 +215,17 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
       s+= mkindent("mutex"+str(atst.wnum)+".exit(0);\n",tabs+1)
       s+= mkindent("}\n",tabs)
     if inputAst.get_type() == 'asgn':
+      #print(inputAst)
       vs = (getVars(inputAst.rexp))
+      
       lv = getEntry((inputAst.lvar),symtab)
+      #print(inputAst.lvar,lv)
+     
       for v in vs:
           s+= mkindent(getCodeGen(v,symtab),tabs) 
       s+=  mkindent(str(inputAst)+";",tabs)
       s+= mkindent(putCodeGen(lv,symtab),tabs)
+      #print(s)
     if inputAst.get_type() == 'ite':
       vs = getVars(inputAst.cond)
       for v in vs:
@@ -225,7 +235,7 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
          istr+= codeGen(stmt,1,symtab)
       istr+= "}\n"
       istr+= "else {\n"
-      for stmt in inputAst.t :
+      for stmt in inputAst.e :
          istr+= codeGen(stmt,1,symtab)
       istr+= "}\n"
       s+= mkindent(istr,tabs) 

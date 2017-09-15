@@ -257,7 +257,9 @@ def p_pass(p):
 def p_asgn(p):
     '''asgn : varname ASGN exp NL
     '''
+    #print(asgnAst(p[1],p[3]))
     p[0] = asgnAst(p[1],p[3])
+      
 
 precedence = (('left','PLUS','MINUS'),
               ('left','TIMES','BY'))
@@ -354,6 +356,10 @@ class mycompiler(object):
         f = open(drawfile,'w')
         f.write(drawCodeGen(str(pgm.name)))
         f.close()
+        f = open(str(pgm.name)+".symtab","w")
+        global symtab
+        f.write(str(symtab))
+        f.close() 
 
 
 #filename = str(raw_input("enter filename:\n"))

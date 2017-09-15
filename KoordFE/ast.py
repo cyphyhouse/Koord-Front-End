@@ -164,6 +164,11 @@ class atomicAst(stmtAst):
         self.wnum = wnum
         self.stmts = stmts
 
+    def __repr__(self):
+        s = "atomic:"
+        for stmt in self.stmts:
+           s+= str(stmt)
+        return s
     def get_type(self):
         return atomictype
 
@@ -183,7 +188,15 @@ class iteAst(stmtAst):
         self.cond  = cond
         self.t = t
         self.e = e 
-
+    def __repr__(self):
+        s = "if "+str(self.cond)+"\n"
+        for stmt in self.t:
+          s+= str(stmt)
+        s += "else"
+        for stmt in self.e:
+          s+= str(stmt)
+        return s 
+        
 class eventAst(list):
     def __init__(self,name,pre,eff):
         self.name = name

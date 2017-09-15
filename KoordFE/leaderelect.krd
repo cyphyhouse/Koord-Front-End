@@ -14,12 +14,11 @@ allread:
 
 local:
   boolean voted = false
-  int myCand = pid 
+  int myCand = -1 
   int leader = -1
 
 init: 
-  pass 
-
+  myCand = pid
 voting:
   pre:(!voted) 
   eff : 
