@@ -8,11 +8,22 @@
     <artifactId>newLib</artifactId>
     <version>0.1-BasicFunctionality</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>local_repository</id>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>RELEASE</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <!-- Logging used in the project -->
@@ -23,18 +34,14 @@
         </dependency>
         <!-- Following are external jars added to the project -->
         <dependency>
-            <groupId>lib_kd</groupId>
-            <artifactId>lib_kd</artifactId>
+            <groupId>edu.wlu.cs.levy</groupId>
+            <artifactId>CG</artifactId>
             <version>0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/kd.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>lib_yadrone_self</groupId>
-            <artifactId>lib_yadrone_self</artifactId>
-            <version>0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/yadrone_self.jar</systemPath>
+            <groupId>de.yadrone</groupId>
+            <artifactId>YADrone</artifactId>
+            <version>2.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -52,6 +59,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
