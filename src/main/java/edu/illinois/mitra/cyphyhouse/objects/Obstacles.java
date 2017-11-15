@@ -72,7 +72,7 @@ public class Obstacles {
      * @return
      */
     public Vector<Point3d> getObstacleVector() {
-        return (Vector<Point3d>)this.obstacle.clone();
+        return new Vector<>(this.obstacle);
     }
 	
 	/**

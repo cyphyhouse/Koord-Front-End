@@ -22,7 +22,7 @@ public class ObstacleList {
     * @param Oblist
     */
 	public ObstacleList(Vector<Obstacles> Oblist) {
-		this.ObList = (Vector<Obstacles>)Oblist.clone();
+		this.ObList = new Vector<>(Oblist);
 		lastUpdateTime = System.currentTimeMillis();
 	}
 	
@@ -30,7 +30,7 @@ public class ObstacleList {
     *
     */
 	public ObstacleList(){
-		this.ObList = new Vector<Obstacles>(3,2);
+		this.ObList = new Vector<>(3, 2);
 		lastUpdateTime = System.currentTimeMillis();
 	}
 
@@ -65,7 +65,7 @@ public class ObstacleList {
 	 * @param Oblist
 	 */
 	public void addObstacles(Vector<Obstacles> Oblist) {
-		this.ObList.addAll((Vector<Obstacles>)Oblist.clone());
+		this.ObList.addAll(Oblist);
 		this.updateObs();
 	}
 	
