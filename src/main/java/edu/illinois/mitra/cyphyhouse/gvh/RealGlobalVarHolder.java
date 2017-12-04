@@ -8,6 +8,7 @@ import edu.illinois.mitra.cyphyhouse.comms.UdpGpsReceiver;
 import edu.illinois.mitra.cyphyhouse.interfaces.TrackedRobot;
 import edu.illinois.mitra.cyphyhouse.motion.MotionAutomation_ARDrone2;
 import edu.illinois.mitra.cyphyhouse.motion.ReachAvoid;
+import edu.illinois.mitra.cyphyhouse.objects.ItemPosition;
 import edu.illinois.mitra.cyphyhouse.objects.ObstacleList;
 import edu.illinois.mitra.cyphyhouse.objects.PositionList;
 
@@ -30,7 +31,7 @@ public class RealGlobalVarHolder extends GlobalVarHolder {
 		super.trace = new Trace(name, "/sdcard/trace/", this);
 		super.plat = new GeneralJavaPlatform();
 		super.comms = new Comms(this, new SmartUdpComThread(this));
-		super.gps = new Gps(this, new UdpGpsReceiver(this,"192.168.1.100",4000,new PositionList(),new PositionList(), new ObstacleList(), new Vector<ObstacleList>(3,2) ));
+		super.gps = new Gps(this, new UdpGpsReceiver(this,"192.168.1.100",4000, new PositionList<>(),new PositionList<>(), new ObstacleList(), new Vector<ObstacleList>(3,2) ));
 		plat.model = initpos;
 		plat.reachAvoid = new ReachAvoid(this);
 		plat.moat = new MotionAutomation_ARDrone2(this);
