@@ -1,0 +1,25 @@
+agent Leader 
+
+allwrite:
+  int candidate = -1
+
+local: 
+  boolean voted = false
+  int leader 
+ 
+
+voted:
+  pre:(!(voted))
+  eff :
+      atomic:
+        if (candidate < pid):
+            candidate = pid 
+        else:
+            leader = candidate
+        voted = true
+
+finalsum:
+  pre:(voted)
+  eff :
+      leader = candidate 
+Num 4

@@ -1,0 +1,49 @@
+agent Lineform
+
+using module Motion:
+    sensors :
+       boolean inMotion
+       boolean done 
+
+allread :
+   int x[*]  
+   int y[*]  
+   int z[*]  
+
+local :
+   ItemPosition position
+
+def stage {pick,go,wait}  
+
+init: 
+   position = Gps.getMyPosition() 
+   x = position.getX()
+   y = position.getY()
+   z = position.getZ() 
+   stage = pick
+e1:
+   pre: pick
+   eff: 
+        if ((pid == 0) || (pid == numBots - 1)) :
+           exit
+        else:
+           Motion.goTo(newPos(  (x[pid - 1]+x[pid + 1]) /2 ,(y[pid - 1]+y[pid + 1])/2,(z[pid - 1]+z[pid +1])/2))
+           stage = go
+
+e1:
+   pre: go
+   eff: 
+      position = Gps.getMyPosition() 
+      x = position.getX()
+      y = position.getY()
+      z = position.getZ() 
+      if(!(inMotion)):
+         stage = wait
+
+e1:
+   pre: wait
+   eff:
+      if (done): 
+         stage = pick
+
+Num 4

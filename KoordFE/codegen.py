@@ -1,243 +1,219 @@
 from ast import *
 
-#dictionary for modules
-flagdict = {'Motion':"import edu.illinois.mitra.cyphyhouse.motion.MotionParameters;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;", 'Trivial' : ""}
+includecode = "import java.util.HashMap;\nimport java.util.HashSet;\nimport edu.illinois.mitra.cyphyhouse.interfaces.MutualExclusion;\nimport java.util.List;\nimport java.util.Map;\nimport edu.illinois.mitra.cyphyhouse.functions.DSMMultipleAttr;\nimport edu.illinois.mitra.cyphyhouse.comms.RobotMessage;\nimport edu.illinois.mitra.cyphyhouse.gvh.GlobalVarHolder;\nimport edu.illinois.mitra.cyphyhouse.interfaces.LogicThread;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters;\nimport edu.illinois.mitra.cyphyhouse.motion.RRTNode;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;\nimport edu.illinois.mitra.cyphyhouse.objects.ObstacleList;\nimport edu.illinois.mitra.cyphyhouse.objects.PositionList;\nimport edu.illinois.mitra.cyphyhouse.interfaces.DSM;"
 
-#dictionary for module functions
-moduleprefix = {'Motion': 'gvh.plat.moat.'}
+moduleprefix = {'Motion': 'gvh.plat.moat.','Gps' : 'gvh.gps.'}
 
-#initialization code for modules 
-initdict = {'Motion' : "MotionParameters.Builder settings = new MotionParameters.Builder();\nsettings.COLAVOID_MODE(COLAVOID_MODE_TYPE.USE_COLBACK);\nMotionParameters param = settings.build();\ngvh.plat.moat.setParameters(param);\n", 'Trivial': ""}
-def flagCodeGen(flags): 
-    m = ""
-    for flag in flags[0]: 
-        if flag in flagdict:
-           m += flagdict[flag]+"\n"
-        else: 
-           print("warning: module "+str(flag)+" not previously defined, consider checking name\n") 
-           pass
-    if flags[1] == True:
-        m+= "import edu.illinois.mitra.cyphyhouse.interfaces.MutualExclusion;\nimport edu.illinois.mitra.cyphyhouse.functions.DSMMultipleAttr;\nimport edu.illinois.mitra.cyphyhouse.functions.GroupSetMutex;\nimport edu.illinois.mitra.cyphyhouse.functions.SingleHopMutualExclusion;\nimport edu.illinois.mitra.cyphyhouse.interfaces.DSM;\n" 
-    return m
+initcode = "MotionParameters.Builder settings = new MotionParameters.Builder();\nsettings.COLAVOID_MODE(COLAVOID_MODE_TYPE.USE_COLBACK);\nMotionParameters param = settings.build();\ngvh.plat.moat.setParameters(param);\n"
 
+recvfunc = "    @Override\n    protected void receive(RobotMessage m) {\n    }\n"
 
-#adding indentations 
 def mkindent(text,tabs):
     indent = tabs * 4 * " "
     textlines = text.split("\n")
     s = ""
     for line in textlines: 
         s += indent + line + "\n"
-    return s 
+    return s
 
+def addnl(s,n):
+    s+="\n"*n
+    return s
 
-recvfunc = "    @Override\n    protected void receive(RobotMessage m) {\n	return;\n   }\n"
-#import code
-
-def impCodeGen():
-  s = '''import java.util.HashMap;\nimport java.util.HashSet;\nimport java.util.List;\nimport java.util.Map;\n\nimport edu.illinois.mitra.cyphyhouse.comms.RobotMessage;\nimport edu.illinois.mitra.cyphyhouse.gvh.GlobalVarHolder;\nimport edu.illinois.mitra.cyphyhouse.interfaces.LogicThread;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;\n\n'''
-  return s
-
-
-#generating package name, and appname from the high level prog
 def packageNameGen(appname):
     return "package testSim."+appname.lower()+";\n\n"
 
-
-#generate class name 
+    
 def classGen(appname):
     appname = appname.title() + "App"
     return "public class "+appname+" extends LogicThread {\n" 
 
+def stageGen(stagelist):
+    s = "private enum Stage { \n    "
+    for i in range(0,len(stagelist)-1):
+       s += stagelist[i].upper() 
+       s +=", "
+    s+= stagelist[-1].upper()+"\n"
+    s+= "};\n"
+    s+= "private Stage stage;\n"
+    return s  
 
-def getVars(expr):
-   if expr is None : 
-      return []
-   elif expr.get_type() == 'var':
-      return [expr.lexp]
-   elif expr.get_type() == 'num':
-      return []
-   elif expr.get_type() == 'bval':
-      return []
-   else:
-      return getVars(expr.lexp)+getVars(expr.rexp)
-
-
-#initialize gvh and create robots
 def mandatoryDecls(pgmast,tabs,wnum):
-    
     decls = mkindent("private static final String TAG = " + '"' + pgmast.name + ' App"'  + ";",tabs)
+    
+    for i in range(0,wnum):
+        decls+= mkindent("private MutualExclusion mutex"+str(i)+";\n",tabs) 
+    decls += mkindent("private DSM dsm;\n",tabs)
     decls += mkindent("int pid;\nprivate int numBots;",tabs)
     flags = pgmast.getflags() 
-    if flags[1] == True :
-        for i in range(0,wnum):
-           decls+= mkindent("private MutualExclusion mutex"+str(i)+";\n",tabs) 
-        decls += mkindent("private DSM dsm;\n",tabs)
-    '''
-    for module in pgmast.modules:
-        ads = module.actuatordecls
-        sds = module.sensordecls 
-        for ad in ads : 
-            decls += codeGen(ad,tabs)
-        for sd in sds : 
-            decls += codeGen(sd,tabs)
-    '''
     return decls + "\n"
 
-#constructor method
 def classInit(appname):
     appname = appname.capitalize() + "App"
-    return "public "+appname+" (GlobalVarHolder gvh)" 
+    return "public "+appname+" (GlobalVarHolder gvh) {\n    super(gvh);" 
 
-#mandatory initializations 
-def mandatoryInits(pgmast,tabs,wnum): 
-    inits = mkindent('pid = Integer.parseInt(name.replaceAll("[^0-9]", ""));',tabs)
-    inits += mkindent("numBots = gvh.id.getParticipants().size();",tabs)
-    flags = pgmast.getflags() 
-    if flags[1] == True :
-        for i in range(0,wnum): 
-           s = "mutex"+str(i)+ "= new GroupSetMutex(gvh, 0);\n"
-        s+="dsm = new DSMMultipleAttr(gvh);"
-        inits += mkindent(s,tabs)
-    for module in flags[0]:
-        inits += mkindent(initdict[module],tabs)
+def mandatoryInits(pgmast,wnum):
+    inits ='pid = Integer.parseInt(name.replaceAll("[^0-9]", ""));\nnumBots = gvh.id.getParticipants().size();\ndsm = new DSMMultipleAttr(gvh);'
     return inits
 
-#code generation for Casting. 
 def createval(dtype):
     if dtype == 'int':
        return 0
     if dtype == 'float':
        return 0.0
 
-
-
 def mkDsms(symtab):
     s = ""
-    for symentry in symtab :
+    for symentry in symtab[0] :
         if symentry.scope == MULTI_WRITER:
            s+= 'dsm.createMW("'+str(symentry.varname)+'",'+str(createval(str(symentry.dtype)))+");\n"    
     return s
-        
-def cast(dtype):
-    if dtype == 'int':
-       return "Integer.parseInt"
+
+def getVars(expr):
+   if not(isAst(expr)) :
+      return []
+   if expr is None : 
+      return []
+   elif expr.get_type() == nulltype:
+      return []
+   elif expr.get_type() == vartype:
+      return [(expr.lexp,None)]
+   elif expr.get_type() == rvtype:
+      return [(expr.varname,expr.access)]
+   elif expr.get_type() == numtype:
+      return []
+   elif expr.get_type() == bvaltype:
+      return []
+   elif expr.get_type() == functype :
+      l = []
+      for var in expr.args:
+         l+= getVars(var)
+      return l 
+   elif expr.get_type() == mfasttype:
+      l = []
+      for var in expr.args:
+         l+= getVars(var)
+      return l 
       
-def getCodeGen(v,symtab):
-    e= getEntry(v,symtab)
-    if e is not None:
-       if e.scope is not LOCAL:
-          return str(e.varname)+" = "+cast(e.dtype)+"("+"dsm.get("+'"'+ str(e.varname) +'","'+ str(e.owner)+'"'  +"));"
-       return ""
-    return ""
+   else:
+      return getVars(expr.lexp)+getVars(expr.rexp)
 
-def putCodeGen(lv,symtab):
-      if lv.scope is not LOCAL: 
-        return ("dsm.put("+'"'+ str(lv.varname)+'","'+ str(lv.owner)+'"'+","+str(lv.varname)+ ");")
-      return "" 
+def rvgetCodegen(var,owner):
+    s = 'dsm.get("'+str(var)+'",name.replaceAll("[0-9]","")+String.valueOf('+str(owner)+'))'
+    return s
+def mwgetCodegen(var,owner):
+    s = 'dsm.get("'+str(var)+'","*")'
+    return s
+ 
+def rvputCodegen(var):
+    s = 'dsm.put("'+str(var)+'"+name,name,'+str(var)+');'
+    return s
+def mwputCodegen(var):
+    s = 'dsm.put("'+str(var)+'","*",'+str(var)+');'
+    return s
 
-def codeGen(inputAst,tabs,symtab = [],wnum = 0):
-    s= ""  
-    if inputAst.get_type ==  'map':
-          s = indent + str(inputAst)+";\n" 
-    if inputAst.get_type() == 'func':
-      m = str(inputast.name)+"("
-      if len(inputast.args) == 0 :
-         m+= ")"
-      else: 
-        for i in range(len(inputast.args)-1) :
-          m+= str(inputast.args[i])+", "
-        m+= str(inputast.args[-1]) +")"
-      s+= m         
-    if inputAst is None :
-       return s 
-    if inputAst.get_type() == 'mfast':
-        modname = moduleprefix[inputast.modfunc[:str(inputast.modfunc).find('.')]]
-        s += mkindent(str(modname)+str(inputast) +";\n",tabs)
-    if inputAst.get_type() == pgmtype :
-      pgm = inputAst
-      s+= packageNameGen(pgm.name)
-      s+= impCodeGen()
-      s+= flagCodeGen(pgm.getflags())+"\n\n" 
-      s+= classGen(pgm.name)
-      
-      s+= mandatoryDecls(pgm,tabs+1,wnum)
-      for decl in inputAst.awdecls:
-         s+= codeGen(decl,tabs+1) 
-      s+= "\n"      
-      for decl in inputAst.ardecls:
-         s+= codeGen(decl,tabs+1)       
-      s += "\n"
-      for decl in inputAst.locdecls:
- 	  s+= codeGen(decl,tabs+1) 
-    
-      for i in range(0,wnum):
-        declstr = "private boolean wait"+str(i)+" = false;"
-        s+= mkindent(declstr,tabs+2) 
+def checknull(var,stages,event = None):
+    stmt = ""
+    if (stages):
+       stmt = "break" 
+    else:
+       stmt = "continue"
+    return "if ("+str(var) +" == null) {"+stmt + ";}"
 
-      s+= mkindent(classInit(pgm.name),tabs+1).rstrip()+"{\n"
-      s+= mkindent("super(gvh);",tabs+2)
-      s+= mandatoryInits(pgm,tabs+2,wnum)
-      for stmt in pgm.init:
-        s+= codeGen(stmt,tabs+2,symtab)
-      s+= mkindent("}\n",tabs+1)
-      s+= mkindent("@Override",tabs+1)
-      s+= mkindent("public List<Object> callStarL() {",tabs+1)
-      s+= mkindent(mkDsms(symtab),tabs+2)
-      s+= mkindent("while(true) {",tabs+2)
-      s+= mkindent("sleep(100);",tabs+3)
-      events = pgm.events
-      for e in events:
-        s+=codeGen(e,tabs+3,symtab)      
-      s+= mkindent("}",tabs+2)
-      s+= mkindent("}",tabs+1)
-      s+= recvfunc
-      s+= mkindent("}",tabs)
-    if inputAst.get_type() == 'var':
+
+
+
+def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
+    s = ""
+    if not(isAst(inputAst)):
+       return s
+    t = inputAst.get_type()
+    if t == pgmtype:
+       pgm = inputAst
+       appname = pgm.name
+       s+= packageNameGen(appname)
+       s+= includecode
+       s = addnl(s,2)
+       s+= classGen(appname)
+       print wnum
+       s+= mandatoryDecls(pgm,1,wnum)
+       sl = pgm.stages
+       if sl is not None:
+          s+= mkindent(stageGen(sl),tabs+1)
+          stages = True
+       awd = pgm.awdecls
+       ard = pgm.ardecls 
+       loc = pgm.locdecls
+   
+       if awd is not None:
+         for decl in awd:
+ 	   s+= codeGen(decl,tabs+1,symtab,stages,ename) 
+       if ard is not None:
+         for decl in ard:
+ 	   s+= codeGen(decl,tabs+1,symtab,stages,ename) 
+       if loc is not None:
+         for decl in loc:
+ 	   s+= codeGen(decl,tabs+1,symtab,stages,ename) 
+       declstr = ""
+       for i in range(0,wnum):
+         declstr += "private boolean wait"+str(i)+" = false;"
+       s+= mkindent(declstr,tabs+2) 
+       s+= mkindent(classInit(appname),tabs+1)
+       s+= mkindent(initcode,tabs+2)
+       s+= mkindent(mandatoryInits(pgm,wnum),tabs+2)
+       s+= mkindent("}",tabs+1)
+       s+= mkindent("@Override",tabs+1)
+       s+= mkindent("public List<Object> callStarL() {",tabs+1)
+       s+= mkindent(mkDsms(symtab),tabs+2)
+       s+= codeGen(pgm.init,tabs+2,symtab,stages,ename)
+       s+= mkindent("while(true) {",tabs+2)
+       s+= mkindent("sleep(100);",tabs+3)
+       if pgm.stages is not None:
+         s+= mkindent("switch(stage) {",tabs+3) 
+         for event in pgm.events:
+           epre = "case "+str(event.pre).upper()+":\n"
+           s+=mkindent(epre,tabs+4)
+           for stmt in event.eff: 
+               s+= codeGen(stmt,tabs+5,symtab,stages,ename)
+           s+= mkindent("break;",tabs+4)
+         s+= mkindent("}",tabs+3)
+       else:
+         for event in pgm.events:
+            s+= codeGen(event, tabs+4, symtab,stages,ename) 
+       s+= mkindent("}",tabs+2)
+       s+= mkindent("}",tabs+1)
+       s+= recvfunc
+       s+= "}"
+    elif (t == decltype):
+       decl = inputAst
+       if decl.value is None :
+          s = mkindent(str(decl.dtype) + " " + str(decl.varname) +";",tabs)     
+       else: 
+          s = mkindent(str(inputAst.dtype) + " " + str(inputAst.varname) + " = " + str(inputAst.value)+";",tabs)
+    elif (t == rvdecltype):
+       decl = inputAst
+       if decl.value is None :
+          s = mkindent(str(decl.dtype) + " " + str(decl.varname) +";",tabs)     
+       else: 
+          s = mkindent(str(inputAst.dtype) + " " + str(inputAst.varname) + " = " + str(inputAst.value)+";",tabs)   
+    elif (t == inittype):
+       initstr = ""
+       for stmt in inputAst.stmts:
+         initstr += codeGen(stmt,0,symtab,stages,ename)
+       s = mkindent(initstr,tabs)
+    elif t == exittype:
+       s = mkindent("return null;",tabs)
+    elif t == stctype:
+       newst = str(inputAst.newst)
+       s = mkindent("stage = Stage."+newst.upper()+";",tabs)
+    elif t == vartype:
       e = getEntry(inputAst,symtab) 
       if e is not None:
-        if e.module is not None: 
-           return modulePrefix+str(inputAst)
+        if e.module is not None:
+           s = moduleprefix[e.module]+str(inputAst)
         else:
-           return str(inputAst)
-    if inputAst.get_type() == 'num':
-      return str(inputAst)
-    if inputAst.get_type() == 'bval':
-      return str(inputAst) 
-    if inputAst.get_type() == 'var':
-      return str(inputAst) 
-
-    if inputAst.get_type() == 'arith':
-      return codeGen(inputAst.lexp,0,symtab) +" " + str(inputAst.op) + " "+ codeGen(inputAst.rexp,0,symtab)      
-
-    if inputAst.get_type() == inittype:
-     for stmt in inputAst.stmts:
-      s+= codeGen(stmt,tabs)  
-    if inputAst.get_type() == evnttype :
-      event = inputAst
-      vs = getVars(event.pre)
-      for v in vs:
-        s+= mkindent(getCodeGen(v,symtab),tabs)
-      #print(event)
-      s += mkindent("if ("+ codeGen(event.pre,0,symtab)+"){\n",tabs)
-
-      for stmt in event.eff:
-          #s+= str(stmt)
-          s+= codeGen(stmt,tabs+1,symtab)
-          s+= mkindent("continue;\n",tabs+1)
-      s+= mkindent("}",tabs)
-       
-    if inputAst.get_type() == condtype :
-      cond = inputAst
-      if cond.rexp is not None:
-        s += "("+codeGen(cond.lexp,0,symtab) + str(cond.op) + codeGen(cond.rexp,0,symtab)+")"
-      elif cond.op is not None:
-        s += "("+ str(cond.op)+codeGen(cond.lexp,0,symtab)+")"
-      else:
-        s+= "("+ codeGen(cond.lexp,0,symtab)+")"
-    if inputAst.get_type() == 'pass':
-      s+= ""
-    if inputAst.get_type() == atomictype: 
+           s = str(inputAst)
+    elif t == atomictype: 
       atst = inputAst
       p = "if(!wait"+str(atst.wnum)+"){\n"
       s+= mkindent(p,tabs)
@@ -246,51 +222,163 @@ def codeGen(inputAst,tabs,symtab = [],wnum = 0):
       s+= mkindent("}",tabs)
       s+= mkindent("if (mutex"+str(atst.wnum)+".clearToEnter(0)) {\n",tabs)
       for stmt in atst.stmts: 
-        s+= codeGen(stmt,tabs+1,symtab)
+        s+= codeGen(stmt,tabs+1,symtab,stages,ename)
       s+= mkindent("mutex"+str(atst.wnum)+".exit(0);\n",tabs+1)
       s+= mkindent("}\n",tabs)
-    if inputAst.get_type() == 'asgn':
-      #print(inputAst)
-      vs = (getVars(inputAst.rexp))
-      
-      lv = getEntry((inputAst.lvar),symtab)
-      #print(inputAst.lvar,lv)
-     
-      for v in vs:
-          s+= mkindent(getCodeGen(v,symtab),tabs) 
-      s+=  mkindent(codeGen(inputAst.lvar,0,symtab)+" = "+codeGen(inputAst.rexp,0,symtab)+";",tabs)
-      s+= mkindent(putCodeGen(lv,symtab),tabs)
-      #print(s)
-    if inputAst.get_type() == 'ite':
-      vs = getVars(inputAst.cond)
-      for v in vs:
-         s+= mkindent(getCodeGen(v,symtab),tabs)
-      istr = "if"+ codeGen(inputAst.cond,tabs)+ "{\n"
-      for stmt in inputAst.t :
-         istr+= codeGen(stmt,1,symtab)
-      istr+= "}\n"
-      istr+= "else {\n"
-      for stmt in inputAst.e :
-         istr+= codeGen(stmt,1,symtab)
-      istr+= "}\n"
-      s+= mkindent(istr,tabs) 
-    elif inputAst.get_type() == 'decl':
-       qualifier = "" 
-       if inputAst.scope == LOCAL: 
-          qualifier = ""
-       elif inputAst.scope ==  MULTI_WRITER:	
-          qualifier = "public"
-       elif inputAst.scope ==  MULTI_READER: 	
-          qualifier = "public"
-       elif inputAst.scope ==  CONTROLLER:	
-          qualifier = "public"
-       #print(inputast.value)
-       if inputAst.value is None:
-          s = mkindent(qualifier+ " "+ str(inputAst.dtype) + " " + str(inputAst.varname) +";",tabs)  
+    elif t == numtype:
+       s = str(inputAst)
+    elif t == restype:
+       s = str(inputAst)
+    elif t == bvaltype:
+       s = str(inputAst)
+    elif t == arithtype:
+       s = "("+codeGen(inputAst.lexp,0,symtab,stages,ename) +" " + str(inputAst.op) + " "+ codeGen(inputAst.rexp,0,symtab,stages,ename)+")"      
+    elif t == rvtype:
+       if str(getEntry(inputAst.varname,symtab).dtype) == 'int':
+         s = "Integer.parseInt("+rvgetCodegen(inputAst.varname,inputAst.access)+")"
        else:
-          s = mkindent(qualifier+ " "+ str(inputAst.dtype) + " " + str(inputAst.varname) + " = " + str(inputAst.value)+";",tabs)
-    return s
+         s = rvgetCodegen(inputAst.varname,inputAst.access)
+    elif t == evnttype :
+      event = inputAst 
+      ename = event.name
+      #print(event)
+      vs = getVars(event.pre)
+      for var in vs:
+          e = getEntry(var[0],symtab).scope
+          if e == MULTI_READER:
+	     m = checknull(rvgetCodegen(var.varname,var.access),stages,ename)+"\n"
+             cast = ""
+             lbr = ""
+             rbr = ""
+             if str(getEntry(var[0],symtab).dtype) == 'int':
+                cast = "Integer.parseInt"
+                lbr = "("
+                rbr = ")"
+             m+= str(var[0])+ " = "+cast+lbr+(rvgetCodegen(var.varname,var.access))+rbr+";\n"
+             s+= mkindent(m,tabs)
+          elif e == MULTI_WRITER:
+             cast = ""
+             lbr = ""
+             rbr = ""
+             if str(getEntry(var[0],symtab).dtype) == 'int':
+                cast = "Integer.parseInt"
+                lbr = "("
+                rbr = ")"
+	     m = checknull(mwgetCodegen(var[0],symtab),stages,ename)+"\n"
+             m+= str(var[0])+ " = "+cast+lbr+(mwgetCodegen(var[0],symtab))+rbr+";\n"
+             s+= mkindent(m,tabs)
+      s += mkindent("if ("+ codeGen(event.pre,0,symtab,stages,ename)+"){\n",tabs)
 
+      for stmt in event.eff:
+          #s+= str(stmt)
+          s+= codeGen(stmt,tabs+1,symtab,stages,ename)
+      s+= mkindent("continue;",tabs+1)
+      s+= mkindent("}",tabs)
+    elif t == moduletype:
+       pass
+    elif t == condtype :
+       cond = inputAst
+       if cond.rexp is not None:
+         s += "("+codeGen(cond.lexp,0,symtab,stages,ename) + " "+ str(cond.op) + " "+ codeGen(cond.rexp,0,symtab,stages,ename)+")"
+       elif cond.op is not None:
+         s += str(cond.op) +"(" +codeGen(cond.lexp,0,symtab,stages,ename)+")"
+       else:
+         s+=  codeGen(cond.lexp,0,symtab,stages,ename)
+    elif t == exprtype:
+       pass
+    elif t == functype:
+       funcname = str(inputAst.name)
+       if funcname == 'newPos':
+         funcname = "new ItemPosition"
+       m = funcname+"("
+       if len(inputAst.args) == 0 :
+          m+= ")"
+       else:
+         if funcname == 'new ItemPosition':
+            m+= '"temp",' 
+         for i in range(len(inputAst.args)-1) :
+           arg = inputAst.args[i] 
+           m+= codeGen(arg,0,symtab,stages,ename)+", "
+ 
+         m+= codeGen(inputAst.args[-1],0,symtab,stages,ename) +")"
+       if inputAst.isstmt :
+          m = mkindent(m+";\n",tabs)
+          nc = ""
+          for i in range(len(inputAst.args)) :
+            arg = inputAst.args[i] 
+            v = getVars(arg)
+            for var in v:
+                nc+= checknull(rvgetCodegen(var[0],var[1]),stages,ename)+"\n"
+          s+= mkindent(nc,tabs) 
+       s+= m         
+    elif t == atomictype:
+       pass
+    elif t == asgntype :
+       lv =  getVars(inputAst.lvar)
+       rv = getVars(inputAst.rexp) 
+       e = getEntry(lv[0][0],symtab).scope
+       for var in rv: 
+          e = getEntry(var[0],symtab).scope
+          if e == MULTI_READER:
+	     m = checknull(rvgetCodegen(var.varname,var.access),stages,ename)+"\n"
+             cast = ""
+             lbr = ""
+             rbr = ""
+             if str(getEntry(var[0],symtab).dtype) == 'int':
+                cast = "Integer.parseInt"
+                lbr = "("
+                rbr = ")"
+             m+= str(var[0])+ " = "+cast+lbr+(rvgetCodegen(var.varname,var.access))+rbr+";\n"
+             s+= mkindent(m,tabs)
+          elif e == MULTI_WRITER:
+             cast = ""
+             lbr = ""
+             rbr = ""
+             if str(getEntry(var[0],symtab).dtype) == 'int':
+                cast = "Integer.parseInt"
+                lbr = "("
+                rbr = ")"
+	     m = checknull(mwgetCodegen(var[0],symtab),stages,ename)+"\n"
+             m+= str(var[0])+ " = "+cast+lbr+(mwgetCodegen(var[0],symtab))+rbr+";\n"
+             s+= mkindent(m,tabs)
+        
+       s+=  mkindent(codeGen(inputAst.lvar,0,symtab,stages,ename)+" = "+codeGen(inputAst.rexp,0,symtab,stages,ename)+";",tabs)
+       if e == MULTI_READER: 
+         s+= mkindent(rvputCodegen(inputAst.lvar),tabs) 
+       if e == MULTI_WRITER: 
+         s+= mkindent(mwputCodegen(inputAst.lvar),tabs) 
+    elif t == mfasttype :
+       
+        modname = moduleprefix[inputAst.modfunc[:str(inputAst.modfunc).find('.')]]
+        newfunc = funcAst(inputAst.modfunc[str(inputAst.modfunc).find('.')+1:],inputAst.args)
+        
+        l = (str(modname)+codeGen(newfunc,0,symtab,stages,ename))
+        if inputAst.isstmt :
+           l = mkindent(l+";",tabs)
+           nc = ""
+           for i in range(len(inputAst.args)) :
+             arg = inputAst.args[i] 
+             v = getVars(arg)
+             for var in v:
+                nc+= checknull(rvgetCodegen(var[0],var[1]),stages,ename)+"\n"
+           s+= mkindent(nc,tabs)
+        s += l
+    elif t == itetype :
+       ite = inputAst
+       istr = "if("+ codeGen(ite.cond,0,symtab,stages,ename) +") {\n"
+       for stmt in ite.t :
+         istr += codeGen(stmt,1,symtab,stages,ename)
+       istr+= "}\n"
+       if ite.e is not None:
+          istr+= "else {\n"
+          for stmt in ite.e : 
+            istr += codeGen(stmt,1,symtab,stages,ename)
+          istr+= "}\n"
+       s+= mkindent(istr,tabs)
+       pass
+    return s 
+
+ 
 def mainCodeGen(name,drawname):
 
     s= "package testSim." + name.lower()+";\n\n"

@@ -1,4 +1,4 @@
-
+from ast import * 
 
 class symEntry(list):
     def __init__(self,dtype,varname,scope,owner = '*',module = None):
@@ -10,12 +10,7 @@ class symEntry(list):
 
     def __repr__(self):
 
-        return ("symEntry: "+str(self.scope)+" "+str(self.dtype)+" "+str(self.varname))
+        return ("symEntry: "+str(self.scope)+" "+str(self.dtype)+" "+str(self.varname) + " "+ str(self.module))
 
     def set_module(self,module):
         self.module = module 
-def getEntry(v,symtab):
-    for entry in symtab :
-           if(str(v)==str(entry.varname)):
-               return entry
-    return None

@@ -1,0 +1,8 @@
+symEntry: -1 boolean inMotion Motion
+symEntry: -1 boolean done Motion
+symEntry: -3 int x None
+symEntry: -3 int y None
+symEntry: -3 int z None
+symEntry: -1 ItemPosition position None
+symEntry: -1 int pid None
+symEntry: -1 int numBots None

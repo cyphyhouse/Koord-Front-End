@@ -3,18 +3,23 @@ from ply import *
 
 #reserved keywords
 RESERVED = {
+  "stage" : 'STAGE',
+  "def" : 'DEF',
+  "stage" : 'STAGE',
+  "getInput" : 'GETINPUT',
+  "null" :'NULL',
   "map"  : 'MAP',
   "pass" : "PASS", 
   "agent" : "AGENT",'atomic':'ATOMIC',
-  "using" : "USING",
+  "using" : "USING", "Num" : 'NUM',
   "module" : "MODULE",
   "sensors" : "SENSORS",
   "actuators" : "ACTUATORS", 
   "String" : "STRING", "int" : "INT", "float" : 'FLOAT', 'boolean': 'BOOLEAN','ItemPosition':'IPOS', #'Stage' : 'STAGE', 
   "allwrite" : "ALLWRITE",
   "allread" : "ALLREAD",
-  "local" : "LOCAL",
-  "init" : "INIT",
+  "local" : "LOCAL","exit": 'EXIT',
+  "init" : "INIT",'pid' : 'PID',
   "if" : 'IF' , 'else' : 'ELSE', "pre" : "PRE", "eff" :"EFF", "true" : 'TRUE', 'false' : 'FALSE' }
 
 #additional required tokens
@@ -23,7 +28,7 @@ tokens = [
   'AND','OR','NOT',
   'LID', 'CID',
   'INUM','FNUM',
-  'LPAR','RPAR', 'LBRACE','RBRACE', #'LCURLY', 'RCURLY',
+  'LPAR','RPAR', 'LBRACE','RBRACE', 'LCURLY', 'RCURLY',
   'PLUS','MINUS','TIMES','BY',
   'LT','GT','EQ','GEQ','LEQ', 'NEQ',
   'ASGN',
@@ -72,8 +77,10 @@ t_ASGN = r'='
 #bracketing
 t_LBRACE = r'\['
 t_RBRACE = r'\]'
-#t_LCURLY = r'\{'
-#t_RCURLY = r'\}'
+t_LCURLY = r'\{'
+t_RCURLY = r'\}'
+
+#capitalized identifiers
 
 
 #capitalized identifiers
@@ -271,8 +278,8 @@ class IndentLexer(object):
 
 #create a lexer. 
 lexer = IndentLexer()
-'''
 #test
+'''
 s = raw_input("Enter filename\n:")
 lexer.input(open(s).read())
 while True :
