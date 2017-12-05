@@ -1,6 +1,6 @@
 from ast import *
 
-includecode = "import java.util.HashMap;\nimport java.util.HashSet;\nimport edu.illinois.mitra.cyphyhouse.interfaces.MutualExclusion;\nimport java.util.List;\nimport java.util.Map;\nimport edu.illinois.mitra.cyphyhouse.functions.DSMMultipleAttr;\nimport edu.illinois.mitra.cyphyhouse.comms.RobotMessage;\nimport edu.illinois.mitra.cyphyhouse.gvh.GlobalVarHolder;\nimport edu.illinois.mitra.cyphyhouse.interfaces.LogicThread;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters;\nimport edu.illinois.mitra.cyphyhouse.motion.RRTNode;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;\nimport edu.illinois.mitra.cyphyhouse.objects.ObstacleList;\nimport edu.illinois.mitra.cyphyhouse.objects.PositionList;\nimport edu.illinois.mitra.cyphyhouse.interfaces.DSM;"
+includecode = "import java.util.HashMap;\nimport java.util.HashSet;\nimport edu.illinois.mitra.cyphyhouse.interfaces.MutualExclusion;\nimport java.util.List;\nimport java.util.Map;\nimport edu.illinois.mitra.cyphyhouse.functions.DSMMultipleAttr;\nimport edu.illinois.mitra.cyphyhouse.comms.RobotMessage;\nimport edu.illinois.mitra.cyphyhouse.gvh.GlobalVarHolder;\nimport edu.illinois.mitra.cyphyhouse.interfaces.LogicThread;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters;\nimport edu.illinois.mitra.cyphyhouse.motion.RRTNode;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;\nimport edu.illinois.mitra.cyphyhouse.objects.ObstacleList;\nimport edu.illinois.mitra.cyphyhouse.objects.PositionList;\nimport edu.illinois.mitra.cyphyhouse.interfaces.DSM;\nimport edu.illinois.mitra.cyphyhouse.functions.GroupSetMutex;"
 
 moduleprefix = {'Motion': 'gvh.plat.moat.','Gps' : 'gvh.gps.'}
 
@@ -54,6 +54,8 @@ def classInit(appname):
 
 def mandatoryInits(pgmast,wnum):
     inits ='pid = Integer.parseInt(name.replaceAll("[^0-9]", ""));\nnumBots = gvh.id.getParticipants().size();\ndsm = new DSMMultipleAttr(gvh);'
+    for i in range(0,wnum):
+        inits+= ("mutex"+str(i)+" = new GroupSetMutex(gvh,0);\n") 
     return inits
 
 def createval(dtype):
