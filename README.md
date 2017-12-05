@@ -1,30 +1,20 @@
+# newLib
+Migrating from old StarLib to a library with only Java dependencies. In order
+to support new CyphyHouse project on various of platforms.
 
-INSTALLATION:
+Original repo can be found here: [`StarLib`](https://github.com/detree/StarL1.5/tree/master/trunk/android/StarLib)
+in [StarL1.5 - yixiao.](https://github.com/lin187/StarL1.5)
 
---High level language
+## to compile and run:
+  * Please be sure to install `maven` and `java`. Currently building under `java1.8`
+  * In the folder after clone:
+    * Type in terminal: `mvn clean install` then `./run.sh`
+  * You may want to toggle the libraries used when running the compiled target, especially for the `log4j` package.
+   __To do so please edit the `run.sh`.__ Default is using the `maven` download libraries, which is under
+   `~/.m2/repository/log4j/log4j/1.2.17/log4j-1.2.17.jar`(note that `java` may not support `~` as
+   `$HOME_DIR`).
 
-Java Development Kit (required JDK 7 or higher)
-
-You can download the required JDK at http://www.oracle.com/technetwork/java/javase/downloads/index.html
-
-In Linux systems, to make sure that everything works you should be able to call java -version and javac -version from a Terminal. For Windows and Mac users, find the Java Control Panel. Under the General tab in the Java Control Panel, the version can be checked from the About section.
-
-###Python 2.7.x Python 2 is required for the parser. Visit https://www.python.org/downloads/ to download and install python.
-
-Python Lex Yacc (ply)
-
-python-ply is a requirement, you can download it at http://www.dabeaz.com/ply/ and install it through distutils using the provided setup.py file by running the command python setup.py install.
-
-It might be required to provide the full installation path of python, in case the path variable is not set properly. Linux users can install it using sudo apt-get install python-ply.
-
-Ensure that you have the execute permissions the scripts 
-
-Installing StarL (newlib) 
-We are migrating to the adopt-handler mechanism of starL now. for user convenience we use maven to compile projects. install maven from linux repositories if you have linux. This assumes you have installed java on your system.
-
-
-Running apps:
-Your file should be stored in the appCode directory, and should have an extension ".krd"
-To run application, run  ./simulate.sh <appname.krd> 
-
-
+## programs under `tools` folder
+  * `send.py` sends UDP packages to a designated address. Currently used for fake position info.
+  * `simul_recv.c` receives UDP packages under port 5556. Currently used for fake ARDrone instance.
+  * trying to use more `python` for simplicity

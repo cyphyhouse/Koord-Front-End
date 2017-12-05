@@ -30,7 +30,7 @@ public class UdpGpsReceiver extends Thread implements GpsReceiver {
 	private static final String TAG = "UdpGPSReceiver";
 	private static final String ERR = "Critical Error";
 
-	public PositionList<ItemPosition> robotPositions;
+	public PositionList robotPositions;
 	public PositionList<ItemPosition> waypointPositions;
 	public ObstacleList obs;
 	public Vector<ObstacleList> viewsOfWorld;
@@ -44,7 +44,7 @@ public class UdpGpsReceiver extends Thread implements GpsReceiver {
 	private String name = null;
 	private boolean received = false;
 
-	public UdpGpsReceiver(GlobalVarHolder gvh,String hostname, int port, PositionList<ItemPosition> robotPositions,
+	public UdpGpsReceiver(GlobalVarHolder gvh,String hostname, int port, PositionList robotPositions,
 						  PositionList<ItemPosition> waypointPositions, ObstacleList obs,
 						  Vector<ObstacleList> viewsOfWorld) {
 		super();

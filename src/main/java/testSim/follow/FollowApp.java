@@ -11,30 +11,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.*;
 
 
 import edu.illinois.mitra.cyphyhouse.comms.RobotMessage;
 import edu.illinois.mitra.cyphyhouse.gvh.GlobalVarHolder;
 import edu.illinois.mitra.cyphyhouse.interfaces.LogicThread;
 import edu.illinois.mitra.cyphyhouse.motion.MotionParameters;
+import edu.illinois.mitra.cyphyhouse.motion.RRTNode;
 import edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;
 import edu.illinois.mitra.cyphyhouse.objects.ItemPosition;
+import edu.illinois.mitra.cyphyhouse.objects.ObstacleList;
+import edu.illinois.mitra.cyphyhouse.objects.PositionList;
 
 
 public class FollowApp extends LogicThread {
     private static final String TAG = "Follow App";
-    private static org.apache.log4j.Logger log = Logger.getLogger(FollowApp.class);
-
-    public static final int ARRIVED_MSG = 22;
     private int destIndex;
-    private int messageCount = 0;
     private int numBots;
     private int numWaypoints;
     private boolean arrived = false;
     private boolean goForever = true;
-    private int msgNum = 0;
-    private HashSet<RobotMessage> receivedMsgs = new HashSet<RobotMessage>();
+    ObstacleList obs;
 
     final Map<String, ItemPosition> destinations = new HashMap<String, ItemPosition>();
     ItemPosition currentDestination;
@@ -54,17 +51,16 @@ public class FollowApp extends LogicThread {
         gvh.plat.moat.setParameters(param);
         for(ItemPosition i : gvh.gps.getWaypointPositions())
             destinations.put(i.getName(), i);
-        gvh.comms.addMsgListener(this, ARRIVED_MSG);
         // bot names must be bot0, bot1, ... botn for this to work
         String intValue = name.replaceAll("[^0-9]", "");
         destIndex = Integer.parseInt(intValue);
         numBots = gvh.id.getParticipants().size();
+        obs = gvh.gps.getObspointPositions();
     }
 
     @Override
     public List<Object> callStarL() {
         while(true) {
-            sleep(100);
             switch(stage) {
                 case INIT:
                     for(ItemPosition i : gvh.gps.getWaypointPositions())
@@ -77,7 +73,6 @@ public class FollowApp extends LogicThread {
                         stage = Stage.DONE;
                     } else {
                         currentDestination = getDestination(destinations, destIndex);
-			log.info("robot "+destIndex+" : "+stage);
                         //Log.d(TAG, currentDestination.toString());
                         destIndex++;
                         if(destIndex >= numWaypoints) {
@@ -93,44 +88,24 @@ public class FollowApp extends LogicThread {
                             if (currentDestination != null)
                                 destinations.remove(currentDestination.getName());
                         }
-                        RobotMessage inform = new RobotMessage("ALL", name, ARRIVED_MSG, Integer.toString(msgNum));
-                        msgNum++;
-                        gvh.log.d(TAG, "At Goal, sent message");
-                        gvh.comms.addOutgoingMessage(inform);
                         arrived = true;
                         stage = Stage.WAIT;
                     }
                     break;
                 case WAIT:
-                    if((messageCount >= numBots - 1) && arrived) {
-                        messageCount = 0;
+                    if(arrived) {
                         stage = Stage.PICK;
                     }
                     break;
                 case DONE:
                     return null;
             }
+            sleep(100);
         }
     }
 
     @Override
     protected void receive(RobotMessage m) {
-        boolean alreadyReceived = false;
-        for(RobotMessage msg : receivedMsgs) {
-            if(msg.getFrom().equals(m.getFrom()) && msg.getContents().equals(m.getContents())) {
-                alreadyReceived = true;
-                break;
-            }
-        }
-        if(m.getMID() == ARRIVED_MSG && !m.getFrom().equals(name) && !alreadyReceived) {
-            gvh.log.d(TAG, "Adding to message count from " + m.getFrom());
-            receivedMsgs.add(m);
-            messageCount++;
-        }
-       /* if((messageCount == numBots) && arrived) {
-            messageCount = 0;
-            stage = Stage.PICK;
-        }*/
     }
 
 
