@@ -1,4 +1,4 @@
-
+from symtab import * 
 LOCAL = -1
 MULTI_WRITER = -2
 MULTI_READER = -3

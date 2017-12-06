@@ -1,22 +1,21 @@
 agent Lineform
 
 using module Motion:
+    actuators: 
+       ItemPosition target
     sensors :
        boolean inMotion
        boolean done 
-
+       ItemPosition position
 allread :
    int x[*]  
    int y[*]  
    int z[*]  
 
-local :
-   ItemPosition position
 
 def stage {pick,go,wait}  
 
 init: 
-   position = Gps.getMyPosition() 
    x = position.getX()
    y = position.getY()
    z = position.getZ() 
@@ -27,13 +26,12 @@ e1:
         if ((pid == 0) || (pid == numBots - 1)) :
            exit
         else:
-           Motion.goTo(newPos(  (x[pid - 1]+x[pid + 1]) /2 ,(y[pid - 1]+y[pid + 1])/2,(z[pid - 1]+z[pid +1])/2))
+           target = newPos(  (x[pid - 1]+x[pid + 1]) /2 ,(y[pid - 1]+y[pid + 1])/2,(z[pid - 1]+z[pid +1])/2)
            stage = go
 
 e1:
    pre: go
    eff: 
-      position = Gps.getMyPosition() 
       x = position.getX()
       y = position.getY()
       z = position.getZ() 

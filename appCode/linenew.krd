@@ -1,9 +1,13 @@
 agent Linenew
 
 using module Motion:
+    actuators :
+       ItemPosition target
+   
     sensors :
        boolean inMotion
        boolean done 
+       ItemPosition position
 
 allread :
    int x[*]  
@@ -11,8 +15,6 @@ allread :
    int z[*]  
 
 local :
-   ItemPosition position
-
    boolean pick 
    boolean go
    boolean wait  
@@ -31,7 +33,7 @@ e1:
         if ((pid == 0) || (pid == numBots - 1)) :
            exit
         else:
-           Motion.goTo(newPos((x[pid - 1]+x[pid + 1])/2,(y[pid - 1]+y[pid + 1])/2,(z[pid - 1]+z[pid +1])/2))
+           target = (newPos((x[pid - 1]+x[pid + 1])/2,(y[pid - 1]+y[pid + 1])/2,(z[pid - 1]+z[pid +1])/2))
            pick = false
            go = true
 

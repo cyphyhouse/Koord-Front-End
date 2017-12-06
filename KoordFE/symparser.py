@@ -6,7 +6,7 @@ from ast import *
 
 def p_program(p):
     '''program : agent modules awdecls ardecls locdecls stagedecl init events Numdecl'''
-    p[0] = (p[2]+p[3]+p[4]+p[5]+[declAst('int','pid'),declAst('int','numBots',p[9])],p[9])
+    p[0] = (p[3]+p[4]+p[5]+[declAst('int','pid'),declAst('int','numBots',p[9])],p[9])
     
 
 def p_Numdecl(p):
@@ -37,26 +37,10 @@ def p_modules(p):
     '''modules : module modules 
                | empty 
     '''
-    if len(p) > 2 :
-       dlist = []
-       if p[2] is not []:
-         p[0]  = p[2]+p[1]
-       else:
-         p[0] = p[1]
-    else:
-       p[0] = []
-
+    pass
 def p_module(p):
     '''module : USING MODULE CID COLON NL INDENT actuatordecls sensordecls DEDENT'''
-    dlist = []
-    for decl in p[7]:
-        decl.module = p[2]
-        dlist.append(decl)
-    for decl in p[8]:
-        decl.module = p[3]
-        dlist.append(decl)
-    p[0] = p[7] + p[8]
-
+    pass
 def p_actuatordecls(p):
     '''actuatordecls : ACTUATORS COLON NL INDENT decls DEDENT 
                      | empty
@@ -227,7 +211,6 @@ def p_stmts(p):
 def p_stmt(p):
     '''stmt : asgn 
             | wptstmt
-            | pass
             | EXIT NL 
             | funccall NL
             | modulefunccall NL
@@ -246,9 +229,6 @@ def p_elseblock(p):
     '''
     p[0] = []
 
-def p_pass(p):
-    '''pass : PASS NL'''
-    p[0] = passAst()
 def p_asgn(p):
     '''asgn : varname ASGN exp NL
     '''

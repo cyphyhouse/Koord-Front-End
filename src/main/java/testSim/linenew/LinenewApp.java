@@ -16,6 +16,7 @@ import edu.illinois.mitra.cyphyhouse.objects.ItemPosition;
 import edu.illinois.mitra.cyphyhouse.objects.ObstacleList;
 import edu.illinois.mitra.cyphyhouse.objects.PositionList;
 import edu.illinois.mitra.cyphyhouse.interfaces.DSM;
+import edu.illinois.mitra.cyphyhouse.functions.GroupSetMutex;
 
 public class LinenewApp extends LogicThread {
     private static final String TAG = "Linenew App";
@@ -27,10 +28,11 @@ public class LinenewApp extends LogicThread {
     int x;
     int y;
     int z;
-    ItemPosition position;
     boolean pick;
     boolean go;
     boolean wait;
+    ItemPosition target;
+    ItemPosition position;
         
     public LinenewApp (GlobalVarHolder gvh) {
         super(gvh);
@@ -58,6 +60,7 @@ public class LinenewApp extends LogicThread {
         wait = false;
         
         while(true) {
+            if (target != null) {gvh.plat.moat.goTo(target);}
             sleep(100);
                 if (pick){
                 
@@ -66,13 +69,24 @@ public class LinenewApp extends LogicThread {
                     }
                     else {
                         if (dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {continue;}
-                        if (dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {continue;}
-                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {continue;}
-                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {continue;}
-                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {continue;}
-                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {continue;}
+                        x = Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))));
                         
-                        gvh.plat.moat.goTo(new ItemPosition("temp",((Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2)));
+                        if (dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {continue;}
+                        x = Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))));
+                        
+                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {continue;}
+                        y = Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))));
+                        
+                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {continue;}
+                        y = Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))));
+                        
+                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {continue;}
+                        z = Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))));
+                        
+                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {continue;}
+                        z = Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))));
+                        
+                        target = new ItemPosition("temp",((Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2));
                         pick = false;
                         go = true;
                     }

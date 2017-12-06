@@ -1,5 +1,5 @@
 from ast import *
-
+from symtab import *
 includecode = "import java.util.HashMap;\nimport java.util.HashSet;\nimport edu.illinois.mitra.cyphyhouse.interfaces.MutualExclusion;\nimport java.util.List;\nimport java.util.Map;\nimport edu.illinois.mitra.cyphyhouse.functions.DSMMultipleAttr;\nimport edu.illinois.mitra.cyphyhouse.comms.RobotMessage;\nimport edu.illinois.mitra.cyphyhouse.gvh.GlobalVarHolder;\nimport edu.illinois.mitra.cyphyhouse.interfaces.LogicThread;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters;\nimport edu.illinois.mitra.cyphyhouse.motion.RRTNode;\nimport edu.illinois.mitra.cyphyhouse.motion.MotionParameters.COLAVOID_MODE_TYPE;\nimport edu.illinois.mitra.cyphyhouse.objects.ItemPosition;\nimport edu.illinois.mitra.cyphyhouse.objects.ObstacleList;\nimport edu.illinois.mitra.cyphyhouse.objects.PositionList;\nimport edu.illinois.mitra.cyphyhouse.interfaces.DSM;\nimport edu.illinois.mitra.cyphyhouse.functions.GroupSetMutex;"
 
 moduleprefix = {'Motion': 'gvh.plat.moat.','Gps' : 'gvh.gps.'}
@@ -45,7 +45,6 @@ def mandatoryDecls(pgmast,tabs,wnum):
         decls+= mkindent("private MutualExclusion mutex"+str(i)+";\n",tabs) 
     decls += mkindent("private DSM dsm;\n",tabs)
     decls += mkindent("int pid;\nprivate int numBots;",tabs)
-    flags = pgmast.getflags() 
     return decls + "\n"
 
 def classInit(appname):
@@ -122,7 +121,7 @@ def checknull(var,stages,event = None):
        stmt = "continue"
     return "if ("+str(var) +" == null) {"+stmt + ";}"
 
-
+motiondecls = "ItemPosition target;\nItemPosition position;"
 
 
 def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
@@ -137,7 +136,6 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        s+= includecode
        s = addnl(s,2)
        s+= classGen(appname)
-       print wnum
        s+= mandatoryDecls(pgm,1,wnum)
        sl = pgm.stages
        if sl is not None:
@@ -155,7 +153,14 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
  	   s+= codeGen(decl,tabs+1,symtab,stages,ename) 
        if loc is not None:
          for decl in loc:
- 	   s+= codeGen(decl,tabs+1,symtab,stages,ename) 
+ 	   s+= codeGen(decl,tabs+1,symtab,stages,ename)
+       motionflag = False
+       for module in pgm.modules:
+           if str(module) == 'Motion':
+              motionflag = True
+              s+= mkindent(motiondecls,tabs+1)
+              symtab = symtab[0]+[mkEntry(declAst("ItemPosition","target",None,LOCAL)),mkEntry(declAst("ItemPosition","position",None,LOCAL)),mkEntry(declAst("boolean","done",None,LOCAL,'Motion')),mkEntry(declAst("boolean","inMotion",None,LOCAL,'Motion'))],symtab[1]
+
        declstr = ""
        for i in range(0,wnum):
          declstr += "private boolean wait"+str(i)+" = false;"
@@ -167,8 +172,12 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        s+= mkindent("@Override",tabs+1)
        s+= mkindent("public List<Object> callStarL() {",tabs+1)
        s+= mkindent(mkDsms(symtab),tabs+2)
+       s+= mkindent("position = gvh.gps.getMyPosition();" ,tabs+3)
        s+= codeGen(pgm.init,tabs+2,symtab,stages,ename)
        s+= mkindent("while(true) {",tabs+2)
+       if motionflag:
+         s+= mkindent("position = gvh.gps.getMyPosition();" ,tabs+3)
+         s+= mkindent("if (target != null) {gvh.plat.moat.goTo(target);}",tabs+3)
        s+= mkindent("sleep(100);",tabs+3)
        if pgm.stages is not None:
          s+= mkindent("switch(stage) {",tabs+3) 
@@ -188,7 +197,12 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        s+= "}"
     elif (t == decltype):
        decl = inputAst
-       if decl.value is None :
+       if decl.module is not None:
+          if str(decl.dtype) == 'ItemPosition':
+             pass
+          else:
+             return s 
+       if decl.value is None:
           s = mkindent(str(decl.dtype) + " " + str(decl.varname) +";",tabs)     
        else: 
           s = mkindent(str(inputAst.dtype) + " " + str(inputAst.varname) + " = " + str(inputAst.value)+";",tabs)
@@ -211,7 +225,7 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
     elif t == vartype:
       e = getEntry(inputAst,symtab) 
       if e is not None:
-        if e.module is not None:
+        if e.module is not None and str(e.dtype) is not 'ItemPosition':
            s = moduleprefix[e.module]+str(inputAst)
         else:
            s = str(inputAst)
@@ -318,11 +332,11 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
     elif t == asgntype :
        lv =  getVars(inputAst.lvar)
        rv = getVars(inputAst.rexp) 
-       e = getEntry(lv[0][0],symtab).scope
+       f = getEntry(lv[0][0],symtab).scope
        for var in rv: 
           e = getEntry(var[0],symtab).scope
           if e == MULTI_READER:
-	     m = checknull(rvgetCodegen(var.varname,var.access),stages,ename)+"\n"
+	     m = checknull(rvgetCodegen(var[0],var[1]),stages,ename)+"\n"
              cast = ""
              lbr = ""
              rbr = ""
@@ -330,7 +344,7 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
                 cast = "Integer.parseInt"
                 lbr = "("
                 rbr = ")"
-             m+= str(var[0])+ " = "+cast+lbr+(rvgetCodegen(var.varname,var.access))+rbr+";\n"
+             m+= str(var[0])+ " = "+cast+lbr+(rvgetCodegen(var[0],var[1]))+rbr+";\n"
              s+= mkindent(m,tabs)
           elif e == MULTI_WRITER:
              cast = ""
@@ -343,14 +357,14 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
 	     m = checknull(mwgetCodegen(var[0],symtab),stages,ename)+"\n"
              m+= str(var[0])+ " = "+cast+lbr+(mwgetCodegen(var[0],symtab))+rbr+";\n"
              s+= mkindent(m,tabs)
-        
+       
        s+=  mkindent(codeGen(inputAst.lvar,0,symtab,stages,ename)+" = "+codeGen(inputAst.rexp,0,symtab,stages,ename)+";",tabs)
-       if e == MULTI_READER: 
+       if f == MULTI_READER:
          s+= mkindent(rvputCodegen(inputAst.lvar),tabs) 
-       if e == MULTI_WRITER: 
+       if f == MULTI_WRITER: 
          s+= mkindent(mwputCodegen(inputAst.lvar),tabs) 
     elif t == mfasttype :
-       
+         
         modname = moduleprefix[inputAst.modfunc[:str(inputAst.modfunc).find('.')]]
         newfunc = funcAst(inputAst.modfunc[str(inputAst.modfunc).find('.')+1:],inputAst.args)
         

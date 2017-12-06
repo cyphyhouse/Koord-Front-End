@@ -16,6 +16,7 @@ import edu.illinois.mitra.cyphyhouse.objects.ItemPosition;
 import edu.illinois.mitra.cyphyhouse.objects.ObstacleList;
 import edu.illinois.mitra.cyphyhouse.objects.PositionList;
 import edu.illinois.mitra.cyphyhouse.interfaces.DSM;
+import edu.illinois.mitra.cyphyhouse.functions.GroupSetMutex;
 
 public class LineformApp extends LogicThread {
     private static final String TAG = "Lineform App";
@@ -32,6 +33,7 @@ public class LineformApp extends LogicThread {
     int x;
     int y;
     int z;
+    ItemPosition target;
     ItemPosition position;
         
     public LineformApp (GlobalVarHolder gvh) {
@@ -48,7 +50,7 @@ public class LineformApp extends LogicThread {
     @Override
     public List<Object> callStarL() {
         
-        position = gvh.gps.getMyPosition();
+            position = gvh.gps.getMyPosition();
         x = position.getX();
         dsm.put("x"+name,name,x);
         y = position.getY();
@@ -58,6 +60,8 @@ public class LineformApp extends LogicThread {
         stage = Stage.PICK;
         
         while(true) {
+            position = gvh.gps.getMyPosition();
+            if (target != null) {gvh.plat.moat.goTo(target);}
             sleep(100);
             switch(stage) {
                 case PICK:
@@ -67,20 +71,30 @@ public class LineformApp extends LogicThread {
                     }
                     else {
                         if (dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {break;}
-                        if (dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {break;}
-                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {break;}
-                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {break;}
-                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {break;}
-                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {break;}
+                        x = Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))));
                         
-                        gvh.plat.moat.goTo(new ItemPosition("temp",((Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2)));
+                        if (dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {break;}
+                        x = Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))));
+                        
+                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {break;}
+                        y = Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))));
+                        
+                        if (dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {break;}
+                        y = Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))));
+                        
+                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))) == null) {break;}
+                        z = Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 ))));
+                        
+                        if (dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))) == null) {break;}
+                        z = Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))));
+                        
+                        target = new ItemPosition("temp",((Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("x",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("y",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2), ((Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid - 1 )))) + Integer.parseInt(dsm.get("z",name.replaceAll("[0-9]","")+String.valueOf(( pid + 1 ))))) / 2));
                         stage = Stage.GO;
                     }
                     
                 break;
                 case GO:
                 
-                    position = gvh.gps.getMyPosition();
                     x = position.getX();
                     dsm.put("x"+name,name,x);
                     y = position.getY();

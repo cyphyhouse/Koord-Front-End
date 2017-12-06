@@ -44,24 +44,34 @@ def p_modules(p):
     '''modules : module modules 
                | empty
     '''
-    pass
+    if len(p) > 2:
+       p[0] = [p[1]]+p[2]
+    else:
+       p[0] = []
+    
  
 def p_module(p):
     '''module : USING MODULE CID COLON NL INDENT actuatordecls sensordecls DEDENT'''
-    pass
+    p[0] = p[3]
 
 
 def p_actuatordecls(p):
     '''actuatordecls : ACTUATORS COLON NL INDENT decls DEDENT
                      | empty
     '''
-    pass
+    if len(p) >2 :
+      p[0] = p[5]
+    else:
+      p[0] = p[1]
 
 def p_sensordecls(p):
     '''sensordecls : SENSORS COLON NL INDENT decls DEDENT
                    | empty 
     '''
-    pass
+    if len(p) >2 :
+      p[0] = p[5]
+    else:
+      p[0] = p[1]
 
 def p_awdecls(p):
     '''awdecls : ALLWRITE COLON NL INDENT decls DEDENT
@@ -220,7 +230,6 @@ def p_stmts(p):
 def p_stmt(p):
     '''stmt : asgn 
             | wptstmt
-            | pass
             | exit 
             | funccall NL
             | modulefunccall NL
@@ -254,9 +263,6 @@ def p_elseblock(p):
     else: 
        p[0] = None
 
-def p_pass(p):
-    '''pass : PASS NL'''
-    pass
 def p_asgn(p):
     '''asgn : varname ASGN exp NL
             | stagechange 

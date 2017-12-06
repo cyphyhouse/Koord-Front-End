@@ -87,7 +87,6 @@ public class AddnumApp extends LogicThread {
                     sum = Integer.parseInt(dsm.get("sum","*"));
                     
                     finalsum = sum;
-                    dsm.put("finalsum","*",finalsum);
                     continue;
                 }
         }
