@@ -2,27 +2,20 @@ agent Follow
 
 using module Motion :
   actuators: 
-    pass 
+    ItemPosition target 
   sensors :
     boolean inMotion
-
-allwrite :
-  pass
-
-allread:
-  pass 
+    boolean done
+    ItemPosition position
 
 local :
+  inputMap destinations
   int destIndex 
   int numWaypoints 
   boolean arrived  = false
   boolean goForever = true
-  boolean wait = false
-  boolean go = false
-  boolean pick = true
-  boolean done = false
-  ItemPosition currentDestination
-  map < String, ItemPosition> destinations
+
+def stage {pick,go,wait,over}
 
 init: 
     destIndex = pid
@@ -30,49 +23,34 @@ init:
     numWaypoints = destinations.size() 
 
 e1: 
-    pre: (pick == true) 
+    pre: pick 
     eff:
           arrived = false
           if (destinations.isEmpty()):
-            pick = false
-            done = true
+            stage = over
           else:
-            currentDestination = getDestination(destinations, destIndex)
+            target = getDestination(destinations, destIndex)
             destIndex = destIndex + 1
             if(destIndex >= numWaypoints):
               destIndex = 0 
-            else:
-              pass
-            gvh.plat.moat.goTo(currentDestination)
-            pick = false
-            go = true
-
-
+            stage = go
        
 e2: 
-    pre: (go == true) 
+    pre: go 
     eff: 
         if(!inMotion):
           if(!goForever):
-            if(currentDestination != null): 
-              destinations.remove(currentDestination.getName())
-            else:
-              pass
-          else:
-            pass 
-        else:
-          pass
+            if(target != null): 
+              destinations.remove(target.getName())
         arrived = true 
-        go = false
-        wait = true
-
+        stage = wait
 e3: 
-    pre: (wait == true) 
+    pre: wait  
     eff: 
-        wait = false
-        pick = true
+       if(done):
+         stage = pick
 e4: 
-    pre: (done == true) 
+    pre: (over) 
     eff: 
-        done = false
-       
+        exit
+Num 5

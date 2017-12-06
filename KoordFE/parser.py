@@ -169,7 +169,8 @@ def p_type(p):
             | STRING 
             | FLOAT
             | IPOS
-            | BOOLEAN 
+            | BOOLEAN
+            | INPUTMAP 
     '''
     #print(p[0])
     p[0] = p[1]

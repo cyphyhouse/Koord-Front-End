@@ -20,7 +20,6 @@ local :
    boolean wait  
 
 init: 
-   position = Gps.getMyPosition() 
    x = position.getX()
    y = position.getY()
    z = position.getZ() 

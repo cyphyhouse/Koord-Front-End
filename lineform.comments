@@ -1,4 +1,8 @@
+#enum Modeset {list}
 agent Lineform
+
+//choose case of variable types. 
+//sensor name change for position. 
 
 using module Motion:
     actuators: 
@@ -7,41 +11,53 @@ using module Motion:
        boolean inMotion
        boolean done 
        ItemPosition position
+
 allread :
+//ItemPosition[*] p 
+//operator overloading. 
+
+
    int x[*]  
    int y[*]  
    int z[*]  
 
+//local:
+//Modeset mode 
 
-def stage {pick,go,wait}  
 
 init: 
+//make allread reads pos[pid] 
+// pos[pid] = position 
    x = position.getX()
    y = position.getY()
    z = position.getZ() 
-   stage = pick
+   mode = pick
+
 e1:
-   pre: pick
+   pre: mode == pick
    eff: 
         if ((pid == 0) || (pid == numBots - 1)) :
            exit
         else:
            target = newPos(  (x[pid - 1]+x[pid + 1]) /2 ,(y[pid - 1]+y[pid + 1])/2,(z[pid - 1]+z[pid +1])/2)
+           //add vector arithmetic to ItemPosition.java. 
+           target = (pos[pid-1] + pos[pid + 1])*.0.5
+
            stage = go
 
 e1:
-   pre: go
-   eff: 
+   pre: mode == go
+   eff:
+     //pos[pid] = position 
       x = position.getX()
       y = position.getY()
       z = position.getZ() 
       if(!(inMotion)):
-         stage = wait
+         mode = wait
 
 e1:
-   pre: wait
+   pre: mode == wait and done
    eff:
-      if (done): 
          stage = pick
 
 Num 4

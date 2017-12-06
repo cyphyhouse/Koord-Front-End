@@ -50,7 +50,7 @@ public class LineformApp extends LogicThread {
     @Override
     public List<Object> callStarL() {
         
-            position = gvh.gps.getMyPosition();
+        position = gvh.gps.getMyPosition();
         x = position.getX();
         dsm.put("x"+name,name,x);
         y = position.getY();

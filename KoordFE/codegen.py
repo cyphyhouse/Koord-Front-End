@@ -123,6 +123,8 @@ def checknull(var,stages,event = None):
 
 motiondecls = "ItemPosition target;\nItemPosition position;"
 
+inputname = ""
+inputFlag = False 
 
 def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
     s = ""
@@ -144,7 +146,6 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        awd = pgm.awdecls
        ard = pgm.ardecls 
        loc = pgm.locdecls
-   
        if awd is not None:
          for decl in awd:
  	   s+= codeGen(decl,tabs+1,symtab,stages,ename) 
@@ -168,6 +169,8 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        s+= mkindent(classInit(appname),tabs+1)
        s+= mkindent(initcode,tabs+2)
        s+= mkindent(mandatoryInits(pgm,wnum),tabs+2)
+       if inputFlag:
+         s += mkindent("for (ItemPosition i : gvh.gps.getWaypointPositions())\n    "+str(inputname)+".put(i.getName(), i);",tabs+2)
        s+= mkindent("}",tabs+1)
        s+= mkindent("@Override",tabs+1)
        s+= mkindent("public List<Object> callStarL() {",tabs+1)
@@ -197,6 +200,16 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        s+= "}"
     elif (t == decltype):
        decl = inputAst
+       if str(decl.dtype) == 'inputMap':
+           s = mkindent("final Map<String, ItemPosition> "+str(decl.varname)+" = new HashMap<String, ItemPosition>();",tabs)
+           global inputname
+           inputname = str(decl.varname)
+           global inputFlag
+
+           inputFlag = True
+           print "herE"
+           return s
+  
        if decl.module is not None:
           if str(decl.dtype) == 'ItemPosition':
              pass

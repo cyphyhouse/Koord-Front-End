@@ -3,6 +3,7 @@ from ply import *
 
 #reserved keywords
 RESERVED = {
+  "inputMap" : 'INPUTMAP',
   "stage" : 'STAGE',
   "def" : 'DEF',
   "stage" : 'STAGE',
