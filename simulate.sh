@@ -10,7 +10,5 @@ an="$(echo $1 | cut -d '.' -f 1)"
 mkdir ../src/main/java/testSim/$an
 mv *.java ../src/main/java/testSim/$an
 cd ..
-mvn compile
-mvn install
-mvn exec:java -Dexec.mainClass="testSim.$an.Main"
+mvn compile install exec:java -Dexec.mainClass="testSim.$an.Main"
 rm $1
