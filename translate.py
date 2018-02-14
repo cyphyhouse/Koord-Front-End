@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from KoordFE.parser import mycompiler
+from KoordFE.translator_java import mycompiler
 
 def main(argv):
     filename = argv[1]

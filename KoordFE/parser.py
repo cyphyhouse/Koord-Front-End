@@ -1,7 +1,5 @@
 from scanner import * 
 from ast import * 
-from codegen import * 
-from symparser import *
 global wnum
 wnum = 0
 
@@ -363,32 +361,6 @@ class myparser(object):
         self.lexer.input(code)
         result = self.parser.parse(lexer=self.lexer)
         return result
-
-class mycompiler(object):
-    def __init__(self):
-        self.parser = myparser()
-
-    def compile(self,filename):
-        code = open(filename,"r").read()
-        pgm = (self.parser.parse(code))
-        symtab = symparser().parse(code) 
-        appname = str(pgm.name)+"App.java"
-        f = open(appname,"w")
-        global wnum
-        print wnum
-	f.write(codeGen(pgm,0,symtab,False,None,wnum))
-        print wnum
-	f.close()
-        f = open("Main.java",'w')
-        f.write(mainCodeGen(str(pgm.name),str(pgm.name)+"Drawer"))
-        f.close()
-        drawfile = str(pgm.name)+"Drawer.java"
-        f = open(drawfile,'w')
-        f.write(drawCodeGen(str(pgm.name)))
-        f.close()
-        f = open(str(pgm.name)+".symtab","w")
-        f.write(str(symtab))
-        f.close() 
 
 def mkStmt(ast):
     bs = ast
