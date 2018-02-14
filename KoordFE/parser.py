@@ -1,7 +1,3 @@
-
-#!/usr/bin/python
-
-import sys
 from scanner import * 
 from ast import * 
 from codegen import * 
@@ -398,6 +394,3 @@ def mkStmt(ast):
     bs = ast
     bs.isstmt = True
     return bs  
-#filename = str(raw_input("enter filename:\n"))
-filename = sys.argv[1]
-mycompiler().compile(filename)
