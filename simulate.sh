@@ -1,14 +1,8 @@
 #!/bin/sh
-cd appCode
-cp $1 ../
-cd ..
-cp $1 KoordFE/
-cd KoordFE
-python parser.py $1
-an="$(echo $1 | cut -d '.' -f 1)"
+python translate.py $1
+rm *.symtab
+an=$(basename "$1" .krd)
 
-mkdir ../src/main/java/testSim/$an
-mv *.java ../src/main/java/testSim/$an
-cd ..
+mkdir src/main/java/testSim/$an
+mv *.java src/main/java/testSim/$an
 mvn compile install exec:java -Dexec.mainClass="testSim.$an.Main"
-rm $1
