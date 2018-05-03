@@ -175,7 +175,6 @@ def codeGen(inputAst,tabs,symtab = [],stages = False, ename= None,wnum = 0):
        s+= mkindent("@Override",tabs+1)
        s+= mkindent("public List<Object> callStarL() {",tabs+1)
        s+= mkindent(mkDsms(symtab),tabs+2)
-       s+= mkindent("position = gvh.gps.getMyPosition();" ,tabs+3)
        s+= codeGen(pgm.init,tabs+2,symtab,stages,ename)
        s+= mkindent("while(true) {",tabs+2)
        if motionflag:
