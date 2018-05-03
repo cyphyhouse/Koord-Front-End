@@ -18,3 +18,10 @@ in [StarL1.5 - yixiao.](https://github.com/lin187/StarL1.5)
   * `send.py` sends UDP packages to a designated address. Currently used for fake position info.
   * `simul_recv.c` receives UDP packages under port 5556. Currently used for fake ARDrone instance.
   * trying to use more `python` for simplicity
+
+
+##Scripts:
+  * write your application code in AppCode/
+  * simulate.sh appCode/<appname>.krd will run the parser and generate java code, then run the file. 
+  * simulate-app.sh <appname> will just recompile and run. Use this to change up main files and draw files in the simulator. 
+  * run.sh <appname> will just run the files. 
